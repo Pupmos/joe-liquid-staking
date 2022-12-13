@@ -14,7 +14,9 @@ use pfc_steak::hub::{
     UnbondRequestsByUserResponseItem,
 };
 
-use crate::contract::{execute, instantiate, reply, REPLY_INSTANTIATE_TOKEN, REPLY_REGISTER_RECEIVED_COINS};
+use crate::contract::{
+    execute, instantiate, reply, REPLY_INSTANTIATE_TOKEN, REPLY_REGISTER_RECEIVED_COINS,
+};
 use crate::helpers::{parse_coin, parse_received_fund};
 use crate::math::{
     compute_redelegations_for_rebalancing, compute_redelegations_for_removal, compute_undelegations,
@@ -55,8 +57,7 @@ fn setup_test() -> OwnedDeps<MockStorage, MockApi, CustomQuerier> {
                 "charlie".to_string(),
             ],
             label: None,
-            marketing:None
-
+            marketing: None,
         },
     )
     .unwrap();
@@ -136,8 +137,7 @@ fn setup_test_fee_split() -> OwnedDeps<MockStorage, MockApi, CustomQuerier> {
                 "charlie".to_string(),
             ],
             label: None,
-            marketing:None
-
+            marketing: None,
         },
     )
     .unwrap();
@@ -209,7 +209,7 @@ fn proper_instantiation() {
             epoch_period: 259200,
             unbond_period: 1814400,
             denom: "uxyz".to_string(),
-            fee_type:"Wallet".to_string(),
+            fee_type: "Wallet".to_string(),
             fee_account: "the_fee_man".to_string(),
             fee_rate: Decimal::from_ratio(10_u128, 100_u128),
             max_fee_rate: Decimal::from_ratio(20_u128, 100_u128),
@@ -253,7 +253,7 @@ fn proper_instantiation() {
             epoch_period: 259200,
             unbond_period: 1814400,
             denom: "uxyz".to_string(),
-            fee_type:"FeeSplit".to_string(),
+            fee_type: "FeeSplit".to_string(),
             fee_account: "fee_split_contract".to_string(),
             fee_rate: Decimal::from_ratio(10_u128, 100_u128),
             max_fee_rate: Decimal::from_ratio(20_u128, 100_u128),
@@ -283,7 +283,10 @@ fn bonding() {
     assert_eq!(res.messages.len(), 2);
     assert_eq!(
         res.messages[0],
-        SubMsg::reply_on_success(Delegation::new("alice", 1000000, "uxyz").to_cosmos_msg(), REPLY_REGISTER_RECEIVED_COINS)
+        SubMsg::reply_on_success(
+            Delegation::new("alice", 1000000, "uxyz").to_cosmos_msg(),
+            REPLY_REGISTER_RECEIVED_COINS
+        )
     );
     assert_eq!(
         res.messages[1],
@@ -326,7 +329,10 @@ fn bonding() {
     assert_eq!(res.messages.len(), 2);
     assert_eq!(
         res.messages[0],
-        SubMsg::reply_on_success(Delegation::new("charlie", 12345, "uxyz").to_cosmos_msg(), REPLY_REGISTER_RECEIVED_COINS)
+        SubMsg::reply_on_success(
+            Delegation::new("charlie", 12345, "uxyz").to_cosmos_msg(),
+            REPLY_REGISTER_RECEIVED_COINS
+        )
     );
     assert_eq!(
         res.messages[1],
@@ -478,8 +484,12 @@ fn reinvesting() {
         Delegation::new("bob", 333333, "uxyz"),
         Delegation::new("charlie", 333333, "uxyz"),
     ]);
-    state.prev_denom.save(deps.as_mut().storage,&Uint128::from(0 as u32)).unwrap();
-    deps.querier.set_bank_balances(&[Coin::new(234u128,"uxyz")]);
+    state
+        .prev_denom
+        .save(deps.as_mut().storage, &Uint128::from(0 as u32))
+        .unwrap();
+    deps.querier
+        .set_bank_balances(&[Coin::new(234u128, "uxyz")]);
 
     // After the swaps, `unlocked_coins` should contain only uxyz and unknown denoms
     state
@@ -538,7 +548,6 @@ fn reinvesting() {
             "ibc/0471F1C4E7AFD3F07702BEF6DC365268D64570F7C1FDC98EA6098DD6DE59817B"
         )],
     );
-
 }
 
 #[test]
@@ -551,8 +560,12 @@ fn reinvesting_fee_split() {
         Delegation::new("bob", 333333, "uxyz"),
         Delegation::new("charlie", 333333, "uxyz"),
     ]);
-    state.prev_denom.save(deps.as_mut().storage,&Uint128::from(0 as u32)).unwrap();
-    deps.querier.set_bank_balances(&[Coin::new(234u128,"uxyz")]);
+    state
+        .prev_denom
+        .save(deps.as_mut().storage, &Uint128::from(0 as u32))
+        .unwrap();
+    deps.querier
+        .set_bank_balances(&[Coin::new(234u128, "uxyz")]);
 
     // After the swaps, `unlocked_coins` should contain only uxyz and unknown denoms
     state
@@ -588,13 +601,15 @@ fn reinvesting_fee_split() {
             reply_on: ReplyOn::Never
         }
     );
-    let send_msg =    pfc_fee_split::fee_split_msg::ExecuteMsg::Deposit{ flush:false};
+    let send_msg = pfc_fee_split::fee_split_msg::ExecuteMsg::Deposit { flush: false };
 
     assert_eq!(
         res.messages[1],
         SubMsg {
             id: 0,
-            msg: send_msg.into_cosmos_msg("fee_split_contract", vec![Coin::new(23u128,"uxyz")]).unwrap(),
+            msg: send_msg
+                .into_cosmos_msg("fee_split_contract", vec![Coin::new(23u128, "uxyz")])
+                .unwrap(),
             gas_limit: None,
             reply_on: ReplyOn::Never
         }
@@ -609,7 +624,6 @@ fn reinvesting_fee_split() {
             "ibc/0471F1C4E7AFD3F07702BEF6DC365268D64570F7C1FDC98EA6098DD6DE59817B"
         )],
     );
-
 }
 
 #[test]
@@ -805,11 +819,17 @@ fn submitting_batch() {
     assert_eq!(res.messages.len(), 4);
     assert_eq!(
         res.messages[0],
-        SubMsg::reply_on_success(Undelegation::new("alice", 31732, "uxyz").to_cosmos_msg(), REPLY_REGISTER_RECEIVED_COINS)
+        SubMsg::reply_on_success(
+            Undelegation::new("alice", 31732, "uxyz").to_cosmos_msg(),
+            REPLY_REGISTER_RECEIVED_COINS
+        )
     );
     assert_eq!(
         res.messages[1],
-        SubMsg::reply_on_success(Undelegation::new("bob", 31733, "uxyz").to_cosmos_msg(), REPLY_REGISTER_RECEIVED_COINS)
+        SubMsg::reply_on_success(
+            Undelegation::new("bob", 31733, "uxyz").to_cosmos_msg(),
+            REPLY_REGISTER_RECEIVED_COINS
+        )
     );
     assert_eq!(
         res.messages[2],
@@ -1169,9 +1189,7 @@ fn withdrawing_unbonded() {
         .unwrap_err();
     assert_eq!(
         err,
-        StdError::NotFound {
-            kind: "pfc_steak::hub::Batch".to_string()
-        }
+        StdError::not_found("pfc_steak::hub::Batch".to_string())
     );
 
     // User 1's unbond requests in batches 1 and 2 should have been deleted
@@ -1192,15 +1210,11 @@ fn withdrawing_unbonded() {
 
     assert_eq!(
         err1,
-        StdError::NotFound {
-            kind: "pfc_steak::hub::UnbondRequest".to_string()
-        }
+        StdError::not_found("pfc_steak::hub::UnbondRequest".to_string())
     );
     assert_eq!(
         err2,
-        StdError::NotFound {
-            kind: "pfc_steak::hub::UnbondRequest".to_string()
-        }
+        StdError::not_found("pfc_steak::hub::UnbondRequest".to_string())
     );
 
     // User 3 attempt to withdraw; also specifying a receiver
@@ -1235,9 +1249,7 @@ fn withdrawing_unbonded() {
         .unwrap_err();
     assert_eq!(
         err,
-        StdError::NotFound {
-            kind: "pfc_steak::hub::Batch".to_string()
-        }
+        StdError::not_found("pfc_steak::hub::Batch".to_string())
     );
 
     let err = state
@@ -1250,9 +1262,7 @@ fn withdrawing_unbonded() {
 
     assert_eq!(
         err,
-        StdError::NotFound {
-            kind: "pfc_steak::hub::UnbondRequest".to_string()
-        }
+        StdError::not_found("pfc_steak::hub::UnbondRequest".to_string())
     );
 }
 
@@ -1455,17 +1465,16 @@ fn transferring_ownership() {
 fn splitting_fees() {
     let mut deps = setup_test();
 
-
     let err = execute(
         deps.as_mut(),
         mock_env(),
         mock_info("jake", &[]),
         ExecuteMsg::TransferFeeAccount {
             fee_account_type: "Wallet".to_string(),
-            new_fee_account: "charlie".to_string()
+            new_fee_account: "charlie".to_string(),
         },
     )
-        .unwrap_err();
+    .unwrap_err();
 
     assert_eq!(
         err,
@@ -1478,26 +1487,26 @@ fn splitting_fees() {
         mock_info("larry", &[]),
         ExecuteMsg::TransferFeeAccount {
             fee_account_type: "xxxx".to_string(),
-            new_fee_account: "charlie".to_string()
+            new_fee_account: "charlie".to_string(),
         },
     )
-        .unwrap_err();
+    .unwrap_err();
 
     assert_eq!(
         err,
         StdError::generic_err("Invalid Fee type: Wallet or FeeSplit only")
     );
 
-     execute(
+    execute(
         deps.as_mut(),
         mock_env(),
         mock_info("larry", &[]),
         ExecuteMsg::TransferFeeAccount {
             fee_account_type: "Wallet".to_string(),
-            new_fee_account: "charlie".to_string()
+            new_fee_account: "charlie".to_string(),
         },
     )
-        .unwrap();
+    .unwrap();
     let res: ConfigResponse = query_helper(deps.as_ref(), QueryMsg::Config {});
     assert_eq!(
         res,
@@ -1508,7 +1517,7 @@ fn splitting_fees() {
             epoch_period: 259200,
             unbond_period: 1814400,
             denom: "uxyz".to_string(),
-            fee_type:"Wallet".to_string(),
+            fee_type: "Wallet".to_string(),
             fee_account: "charlie".to_string(),
             fee_rate: Decimal::from_ratio(10_u128, 100_u128),
             max_fee_rate: Decimal::from_ratio(20_u128, 100_u128),
@@ -1520,17 +1529,16 @@ fn splitting_fees() {
         }
     );
 
-
     execute(
         deps.as_mut(),
         mock_env(),
         mock_info("larry", &[]),
         ExecuteMsg::TransferFeeAccount {
             fee_account_type: "FeeSplit".to_string(),
-            new_fee_account: "contract".to_string()
+            new_fee_account: "contract".to_string(),
         },
     )
-        .unwrap();
+    .unwrap();
     let res: ConfigResponse = query_helper(deps.as_ref(), QueryMsg::Config {});
     assert_eq!(
         res,
@@ -1541,7 +1549,7 @@ fn splitting_fees() {
             epoch_period: 259200,
             unbond_period: 1814400,
             denom: "uxyz".to_string(),
-            fee_type:"FeeSplit".to_string(),
+            fee_type: "FeeSplit".to_string(),
             fee_account: "contract".to_string(),
             fee_rate: Decimal::from_ratio(10_u128, 100_u128),
             max_fee_rate: Decimal::from_ratio(20_u128, 100_u128),
@@ -1830,9 +1838,13 @@ fn computing_redelegations_for_rebalancing() {
         Delegation::new("dave", 40471, "uxyz"),
         Delegation::new("evan", 2345, "uxyz"),
     ];
-    let active_validators:Vec<String> = vec!["alice".to_string(),"bob".to_string(),
-                                             "charlie".to_string(), "dave".to_string(),
-                                             "evan".to_string()];
+    let active_validators: Vec<String> = vec![
+        "alice".to_string(),
+        "bob".to_string(),
+        "charlie".to_string(),
+        "dave".to_string(),
+        "evan".to_string(),
+    ];
     // uluna_per_validator = (69420 + 88888 + 1234 + 40471 + 2345) / 4 = 40471
     // remainer = 3
     // src_delegations:
@@ -1864,15 +1876,20 @@ fn computing_redelegations_for_rebalancing() {
     ];
 
     assert_eq!(
-        compute_redelegations_for_rebalancing(active_validators,&current_delegations,Uint128::from(10 as u64)),
+        compute_redelegations_for_rebalancing(
+            active_validators,
+            &current_delegations,
+            Uint128::from(10 as u64)
+        ),
         expected,
     );
 
-
-    let partially_active =  vec![ "alice".to_string(),
-                                             "charlie".to_string(),
-                                             "dave".to_string(),
-                                             "evan".to_string()];
+    let partially_active = vec![
+        "alice".to_string(),
+        "charlie".to_string(),
+        "dave".to_string(),
+        "evan".to_string(),
+    ];
 
     let partially_expected = vec![
         Redelegation::new("alice", "dave", 10118, "uxyz"),
@@ -1880,7 +1897,11 @@ fn computing_redelegations_for_rebalancing() {
         Redelegation::new("charlie", "evan", 38299, "uxyz"),
     ];
     assert_eq!(
-        compute_redelegations_for_rebalancing(partially_active.clone(),&current_delegations,Uint128::from(10 as u64)),
+        compute_redelegations_for_rebalancing(
+            partially_active.clone(),
+            &current_delegations,
+            Uint128::from(10 as u64)
+        ),
         partially_expected,
     );
 
@@ -1889,7 +1910,11 @@ fn computing_redelegations_for_rebalancing() {
         Redelegation::new("charlie", "evan", 29414, "uxyz"),
     ];
     assert_eq!(
-        compute_redelegations_for_rebalancing(partially_active,&current_delegations,Uint128::from(15_000 as u64)),
+        compute_redelegations_for_rebalancing(
+            partially_active,
+            &current_delegations,
+            Uint128::from(15_000 as u64)
+        ),
         partially_expected_minimums,
     );
 }
